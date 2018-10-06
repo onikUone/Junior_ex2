@@ -113,11 +113,11 @@ public class Main {
 		}
 		InterNeuron inter[] = new InterNeuron[interNumber];
 		for(int i=0; i<inter.length; i++){
-			inter[i] = new InterNeuron(inputNumber, preWeight, preThreshoud, preEta, preAlpha);	//コンストラクタには前層の個数を指定 = weightの個数を決定する
+			inter[i] = new InterNeuron(inputNumber, Math.random(), Math.random(), preEta, preAlpha);	//コンストラクタには前層の個数を指定 = weightの個数を決定する
 		}
 		OutputNeuron out[] = new OutputNeuron[outputNumber];
 		for(int i=0; i<out.length; i++) {
-			out[i] = new OutputNeuron(interNumber, preWeight, preThreshoud, preEta, preAlpha);
+			out[i] = new OutputNeuron(interNumber, Math.random(), Math.random(), preEta, preAlpha);
 		}
 
 		//学習フェーズ
@@ -159,11 +159,11 @@ public class Main {
 //				e += (y[i][j] - forward(input, inter, out)[j].output()) * (y[i][j] - forward(input, inter, out)[j].output()) / 2;
 //			}
 //		}
-		System.out.println("Count: " + trainCount);
+		System.out.println("Train Count: " + trainCount);
 		System.out.println("Error: " + e);
 
 		//学習関数出力
-		int h = 100;	//テストデータの刻み幅
+		int h = 500;	//テストデータの刻み幅
 		double[][] test_X = new double[h*h][inputNumber];
 		double[][] test_Y = new double[h*h][outputNumber];
 
@@ -184,54 +184,51 @@ public class Main {
 			}
 		}
 
+
 		//クラスタリング
 		double com = 0.0;
 		int classofX[] = new int[h*h];
-		int border = 0;
-
 		for(int i=0; i<h; i++) {
 			for(int j=0; j<h; j++) {
-				com = test_Y[i*h+j][0];
 				for(int k=0; k<outputNumber; k++) {
-					if(com < test_Y[i*h+j][k]) {
+					if(k == 0) {
+						com = test_Y[i*h+j][0];
+						classofX[i*h+j] = 0;
+					}
+					else if(com < test_Y[i*h+j][k]) {
 						com = test_Y[i*h+j][k];
 						classofX[i*h+j] = k;
-						border++;
 					}
 				}
 			}
 		}
 
-		double chengeX[][] = new double[border][inputNumber];
-		int comClass;
-		int count = 0;
+		//境界点 書き出し
+		String borderPath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\border.dat";	//Windows(研究室環境)
+		PrintWriter outPrint = new PrintWriter(new BufferedWriter(new FileWriter(borderPath)));
+
+		int comClass = -1;
 		for(int i=0; i<h; i++) {
-			comClass = classofX[i*h];
-			for(int j=1; j<h; j++) {
-				if(comClass != classofX[i*h+j]){
+			for(int j=0; j<h; j++) {
+				if(j == 0) {
+					comClass = classofX[i*h];
+				}
+				else if(comClass != classofX[i*h+j]){
 					comClass = classofX[i*h+j];
 					for(int k=0; k<inputNumber; k++) {
-						chengeX[count][k] = test_X[i*h+j][k];
+						outPrint.write(String.valueOf(test_X[i*h+j][k]));
+						outPrint.write("\t");
 					}
-					count++;
+					outPrint.println("");
 				}
 			}
 		}
+		outPrint.close();
 
 		//ファイル書き出し
 		writeFile(writePath, test_X, test_Y, classofX);
 
 		//境界線用データ
-		String borderPath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\border.dat";	//Windows(研究室環境)
-		PrintWriter outPrint = new PrintWriter(new BufferedWriter(new FileWriter(borderPath)));
-		for(int i=0; i<chengeX.length; i++) {
-			for(int j=0; j<chengeX[i].length; j++) {
-				outPrint.write(String.valueOf(chengeX[i][j]));
-				outPrint.write("\t");
-			}
-			outPrint.println("");
-		}
-		outPrint.close();
 
 	}
 }
