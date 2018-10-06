@@ -39,8 +39,7 @@ public class Main {
 				out.write(String.valueOf(y[i][j]));
 				out.write("\t");
 			}
-			out.write("\b");
-			out.write("\n");
+			out.println("");
 		}
 		out.close();
 	}
@@ -53,20 +52,19 @@ public class Main {
 		for(int i=0; i<out.length; i++){
 			out[i].forward_function(inter);
 		}
-
 		return out;
 	}
 
 	public static void main(String[] args) throws IOException {
 		//初期パラメータ
-		int trainCount = 0;		//学習回数
+		int trainCount = 1;		//学習回数
 		int inputNumber = 2;	//入力層個数
 		int interNumber = 20;	//中間層個数
 		int outputNumber = 3;	//出力層個数
 		double preWeight = 0.5;	//結合強度初期値
 		double preThreshoud = 0.5; //しきい値初期値
 		double preEta = 0.5;	//学習係数初期値
-		double preAlpha = 0.9;	//慢性項係数初期値
+		double preAlpha = 0.8;	//慢性項係数初期値
 
 		//ファイル読み込みPath
 //		String readPath = "/Users/Uone/IDrive/OPU/研究フォルダ/1_プログラミング課題/eclipse_workspace/eclipse_ex1/src/eclipse_ex1/inputData.dat";	//Mac(ノートPC)環境
@@ -148,6 +146,25 @@ public class Main {
 		}
 		System.out.println("Training is Finished.");
 
+		//評価関数
+		double e = 0.0;
+		for(int i=0; i<x.length; i++) {
+			//入力層へ入力
+			for(int j=0; j<input.length; j++) {
+				input[j].input(x[i][j]);
+			}
+			for(int j=0; j<outputNumber; j++) {
+				e += (y[i][j] - forward(input, inter, out)[j].output()) * (y[i][j] - forward(input, inter, out)[j].output()) / 2;
+			}
+		}
+//		for(int i=0; i< x.length; i++){
+//			for(int j=0; j<outputNumber; j++) {
+//				e += (y[i][j] - forward(input, inter, out)[j].output()) * (y[i][j] - forward(input, inter, out)[j].output()) / 2;
+//			}
+//		}
+		System.out.println("Count: " + trainCount);
+		System.out.println("Error: " + e);
+
 		//学習関数出力
 		int h = 100;	//テストデータの刻み幅
 		double[][] test_X = new double[h*h][inputNumber];
@@ -155,8 +172,8 @@ public class Main {
 
 		for(int i=0; i<h; i++) {
 			for(int j=0; j<h; j++) {
-				test_X[i*h+j][0] = (double)(i/h);
-				test_X[i*h+j][1] = (double)(j/h);
+				test_X[i*h+j][0] = (double)i/h;
+				test_X[i*h+j][1] = (double)j/h;
 			}
 		}
 
@@ -175,21 +192,5 @@ public class Main {
 
 		//ファイル書き出し
 		writeFile(writePath, test_X, test_Y);
-
-		//評価関数
-		double e = 0.0;
-		//入力層入力
-		for(int i=0; i<x.length; i++) {
-			for(int j=0; j<input.length; j++) {
-				input[j].input(x[i][j]);
-			}
-		}
-		for(int i=0; i< x.length; i++){
-			for(int j=0; j<outputNumber; j++) {
-				e += (y[i][j] - forward(input, inter, out)[j].output()) * (y[i][j] - forward(input, inter, out)[j].output()) / 2;
-			}
-		}
-		System.out.println("Count: " + trainCount);
-		System.out.println("Error: " + e);
 	}
 }

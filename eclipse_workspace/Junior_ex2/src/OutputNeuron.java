@@ -2,6 +2,13 @@ public class OutputNeuron extends Neuron{
 	//member field
 
 	//member method
+//	public void forward_function(InterNeuron inter[]) {
+//		net = 0.0;
+//		for(int i=0; i<this.weight.length; i++) {
+//			net += weight[i] * inter[i].output();
+//		}
+//		net += threshoud;
+//	}
 	public void reWeight(InterNeuron inter[], double y) {
 		for(int i=0; i<this.weight.length; i++) {
 			delta_W[i] *= alpha;
