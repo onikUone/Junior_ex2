@@ -13,15 +13,15 @@ public class Neuron {
 	public double[] getWeight(){
 		return weight;
 	}
-	public void clearNet(){
+
+	public void forward_function(Neuron preNeuron[]) {
 		net = 0.0;
-	}
-	public void setNet(double o_pre, int preIndex){
-		net += weight[preIndex] * o_pre;
-	}
-	public void calcNet(){
+		for(int i=0; i<this.weight.length; i++) {
+			net += weight[i] * preNeuron[i].output();
+		}
 		net += threshoud;
 	}
+
 	public double output() {	//入力層のみオーバーライドする
 		return 1.0/(1.0 + Math.exp(-net));
 	}
@@ -38,5 +38,8 @@ public class Neuron {
 		delta_W = new double[weight.length];
 		Arrays.fill(delta_W, 0.0);
 		delta_T = 0.0;
+	}
+	Neuron(){	//入力層の時はオーバーライドして何もしない
+
 	}
 }

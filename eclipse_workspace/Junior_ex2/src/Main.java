@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Main {
@@ -16,133 +15,179 @@ public class Main {
 		BufferedReader in = new BufferedReader(new FileReader(path));
 		String line;
 		while((line = in.readLine()) != null){
-			list.add(line.split("\t"));
+			list.add(line.split(" "));
 		}
 		in.close();
-		double[][] x_n2 = new double[list.size()][list.get(0).length];
+		double[][] x = new double[list.size()][list.get(0).length];
 		for(int i=0; i<list.size(); i++){
-			x_n2[i][0] = Double.parseDouble(list.get(i)[0]);
-			x_n2[i][1] = Double.parseDouble(list.get(i)[1]);
+			for(int j=0; j<x[i].length; j++) {
+				x[i][j] = Double.parseDouble(list.get(i)[j]);
+			}
 		}
-		return x_n2;
+		return x;
 	}
 
 	//ファイル書き込みメソッド
-	public static void writeFile(String path, double x[], double y[]) throws IOException{
+	public static void writeFile(String path, double x[][], double y[][]) throws IOException{
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path)));
-		for(int i=0; i<x.length; i++){
-			out.write(String.valueOf(x[i]));
-			out.write("\t");
-			out.write(String.valueOf(y[i]));
+		for(int i=0; i<x.length; i++) {
+			for(int j=0; j<x[i].length; j++) {
+				out.write(String.valueOf(x[i][j]));
+				out.write("\t");
+			}
+			for(int j=0; j<y[i].length; j++) {
+				out.write(String.valueOf(y[i][j]));
+				out.write("\t");
+			}
+			out.write("\b");
 			out.write("\n");
 		}
 		out.close();
 	}
 
 	//順方向計算メソッド
-	public static double forward(double x, InterNeuron inter[], OutputNeuron out, int flg){	//flg 出力層の出力表示フラグ
+	public static OutputNeuron[] forward(InputNeuron input[], InterNeuron inter[], OutputNeuron out[]){
 		for(int i=0; i<inter.length; i++){
-			inter[i].clearNet();
+			inter[i].forward_function(input);
 		}
-		for(int i=0; i<inter.length; i++){
-			inter[i].setNet(x, 0);
+		for(int i=0; i<out.length; i++){
+			out[i].forward_function(inter);
 		}
-		for(int i=0; i<inter.length; i++){
-			inter[i].calcNet();
-		}
-		out.clearNet();
-		for(int i=0; i<inter.length; i++){
-			out.setNet(inter[i].output(), i);
-		}
-		out.calcNet();
-		if(flg == 1){
-			System.out.println(out.output());
-		}
-		return out.output();
-	}
 
-	public static void train(double x[], double y[], InterNeuron inter[], OutputNeuron out){
-		for(int i=0; i<x.length; i++){	//学習一周につき、入力ベクトル全部計算するためのループ
-			//順方向計算
-			forward(x[i], inter, out, 0);
-
-			//バックプロパゲーション
-			//中間層の重み更新
-			for(int j=0; j<inter.length; j++){
-				inter[j].reWeight(x[i], y[i], inter[j].output(), out, j);
-			}
-			//出力層の重み更新
-			out.reWeight(y[i], out.output(), inter);
-		}
+		return out;
 	}
 
 	public static void main(String[] args) throws IOException {
 		//初期パラメータ
-		int trainCount = 30000;		//学習回数
-		int inputNumber = 1;	//入力層個数
+		int trainCount = 0;		//学習回数
+		int inputNumber = 2;	//入力層個数
 		int interNumber = 20;	//中間層個数
-//		double preWeight = Math.random();	//結合強度初期値
-//		double preThreshoud = Math.random(); //しきい値初期値
+		int outputNumber = 3;	//出力層個数
+		double preWeight = 0.5;	//結合強度初期値
+		double preThreshoud = 0.5; //しきい値初期値
 		double preEta = 0.5;	//学習係数初期値
 		double preAlpha = 0.9;	//慢性項係数初期値
 
 		//ファイル読み込みPath
 //		String readPath = "/Users/Uone/IDrive/OPU/研究フォルダ/1_プログラミング課題/eclipse_workspace/eclipse_ex1/src/eclipse_ex1/inputData.dat";	//Mac(ノートPC)環境
-		String readPath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex1\\eclipse_workspace\\eclipse_ex1\\src\\eclipse_ex1/inputData.dat";	//Windows(研究室環境)
+		String readPath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\kadai2.dat";	//Windows(研究室環境)
 		//ファイル書き込みPath
 //		String writePath = "/Users/Uone/IDrive/OPU/研究フォルダ/1_プログラミング課題/eclipse_workspace/eclipse_ex1/src/eclipse_ex1/outputData.dat";	//Mac(ノートPC)環境
-		String writePath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex1\\eclipse_workspace\\eclipse_ex1\\src\\eclipse_ex1/outputData.dat";	//Windows(研究室環境)
+		String writePath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\outputData.dat";	//Windows(研究室環境)
 
 		//ファイル読み込み
 		double[][] inputFile;	//datファイル ２次元配列化
 		inputFile = readFile(readPath);
 
+
 		//教師データ作成
-		double[] x = new double[inputFile.length];	//入力ベクトル_教師データ
-		double[] y = new double[inputFile.length];	//出力ベクトル_教師データ
+		double[][] x = new double[inputFile.length][inputNumber];	//入力ベクトル_教師データ
+		double[][] y = new double[inputFile.length][outputNumber];	//出力ベクトル_教師データ
 		for(int i=0; i<inputFile.length; i++){
-			x[i] = inputFile[i][0];
-			y[i] = inputFile[i][1];
+			for(int j=0; j<inputNumber; j++) {
+				x[i][j] = inputFile[i][j];
+			}
+			for(int j=0; j<outputNumber; j++) {
+				y[i][j] = inputFile[i][j+inputNumber];
+			}
 		}
 		System.out.println("----------");
 		System.out.println("Train Data");
-		System.out.println(" x   y ");
-		for(int i=0; i<x.length; i++){
-			System.out.println(x[i] + " " + y[i]);
+		for(int i=0; i<x.length; i++) {
+			System.out.print("x[" + i + "]: ");
+			for(int j=0; j<x[i].length; j++) {
+				System.out.print(x[i][j] + " ");
+			}
+			System.out.print("\n");
+			System.out.print("y[" + i + "]: ");
+			for(int j=0; j<y[i].length; j++) {
+				System.out.print(y[i][j] + " ");
+			}
+			System.out.print("\n\n");
 		}
 		System.out.println("----------");
 
 		//ニューロン インスタンス作成
+		InputNeuron input[] = new InputNeuron[inputNumber];
+		for(int i=0; i<input.length; i++) {
+			input[i] = new InputNeuron();
+		}
 		InterNeuron inter[] = new InterNeuron[interNumber];
 		for(int i=0; i<inter.length; i++){
-			inter[i] = new InterNeuron(inputNumber, Math.random(), Math.random(), preEta, preAlpha);	//コンストラクタには前層の個数を指定 = weightの個数を決定する
+			inter[i] = new InterNeuron(inputNumber, preWeight, preThreshoud, preEta, preAlpha);	//コンストラクタには前層の個数を指定 = weightの個数を決定する
 		}
-		OutputNeuron out = new OutputNeuron(interNumber, Math.random(), Math.random(), preEta, preAlpha);
+		OutputNeuron out[] = new OutputNeuron[outputNumber];
+		for(int i=0; i<out.length; i++) {
+			out[i] = new OutputNeuron(interNumber, preWeight, preThreshoud, preEta, preAlpha);
+		}
 
 		//学習フェーズ
 		for(int i=0; i<trainCount; i++){
-			train(x, y, inter, out);
+			//入力層入力
+			for(int j=0; j<x.length; j++) {
+				for(int k=0; k<input.length; k++) {
+					input[k].input(x[j][k]);
+				}
+			}
+
+			//順方向計算
+			forward(input, inter, out);
+
+			//バックプロパゲーション
+			for(int j=0; j<y.length; j++) {	//教師データの個数で一周
+				//中間層重み更新
+				for(int k=0; k<inter.length; k++) {
+					inter[k].reWeight(input, out, y[j], k);
+				}
+
+				//出力層重み更新
+				for(int k=0; k<out.length; k++) {
+					out[k].reWeight(inter, y[j][k]);
+				}
+			}
 		}
 		System.out.println("Training is Finished.");
 
 		//学習関数出力
-		double[] test_X = new double[100+1];
-		double[] test_Y = new double[100+1];
-		Arrays.fill(test_X, 0.0);
-		Arrays.fill(test_Y, 0.0);
-		test_Y[0] = forward(test_X[0], inter, out, 0);
-		for(int i=1; i<test_X.length; i++){
-			test_X[i] = test_X[i-1] + 0.01;
-			test_Y[i] = forward(test_X[i], inter, out, 0);
+		int h = 100;	//テストデータの刻み幅
+		double[][] test_X = new double[h*h][inputNumber];
+		double[][] test_Y = new double[h*h][outputNumber];
+
+		for(int i=0; i<h; i++) {
+			for(int j=0; j<h; j++) {
+				test_X[i*h+j][0] = (double)(i/h);
+				test_X[i*h+j][1] = (double)(j/h);
+			}
+		}
+
+		//テストデータを入力層へ入力
+		for(int i=0; i<test_X.length; i++) {
+			for(int j=0; j<input.length; j++) {
+				input[j].input(test_X[i][j]);
+			}
+		}
+		for(int i=0; i<test_X.length; i++) {
+			for(int j=0; j<outputNumber; j++) {
+				test_Y[i][j] = forward(input, inter, out)[j].output();
+
+			}
 		}
 
 		//ファイル書き出し
 		writeFile(writePath, test_X, test_Y);
 
 		//評価関数
-		double e = 0;
+		double e = 0.0;
+		//入力層入力
+		for(int i=0; i<x.length; i++) {
+			for(int j=0; j<input.length; j++) {
+				input[j].input(x[i][j]);
+			}
+		}
 		for(int i=0; i< x.length; i++){
-			e += (y[i] - forward(x[i],inter,out,0)) * (y[i] - forward(x[i],inter,out,0)) / 2;
+			for(int j=0; j<outputNumber; j++) {
+				e += (y[i][j] - forward(input, inter, out)[j].output()) * (y[i][j] - forward(input, inter, out)[j].output()) / 2;
+			}
 		}
 		System.out.println("Count: " + trainCount);
 		System.out.println("Error: " + e);
