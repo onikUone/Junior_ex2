@@ -28,7 +28,7 @@ public class Main {
 	}
 
 	//ファイル書き込みメソッド
-	public static void writeFile(String path, double x[][], double y[][]) throws IOException{
+	public static void writeFile(String path, double x[][], double y[][], int classofX[]) throws IOException{
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path)));
 		for(int i=0; i<x.length; i++) {
 			for(int j=0; j<x[i].length; j++) {
@@ -39,6 +39,7 @@ public class Main {
 				out.write(String.valueOf(y[i][j]));
 				out.write("\t");
 			}
+			out.write("class:" + String.valueOf(classofX[i]+1));
 			out.println("");
 		}
 		out.close();
@@ -57,7 +58,7 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		//初期パラメータ
-		int trainCount = 1;		//学習回数
+		int trainCount = 3000;		//学習回数
 		int inputNumber = 2;	//入力層個数
 		int interNumber = 20;	//中間層個数
 		int outputNumber = 3;	//出力層個数
@@ -121,27 +122,23 @@ public class Main {
 
 		//学習フェーズ
 		for(int i=0; i<trainCount; i++){
-			//入力層入力
-			for(int j=0; j<x.length; j++) {
+			for(int j=0; j<x.length; j++) {	//教師データ全て = 学習一周
+				//入力層入力
 				for(int k=0; k<input.length; k++) {
 					input[k].input(x[j][k]);
 				}
-			}
-
-			//順方向計算
-			forward(input, inter, out);
-
-			//バックプロパゲーション
-			for(int j=0; j<y.length; j++) {	//教師データの個数で一周
+				//順方向計算
+				forward(input, inter, out);
+				//バックプロパゲーション
 				//中間層重み更新
 				for(int k=0; k<inter.length; k++) {
 					inter[k].reWeight(input, out, y[j], k);
 				}
-
 				//出力層重み更新
 				for(int k=0; k<out.length; k++) {
 					out[k].reWeight(inter, y[j][k]);
 				}
+
 			}
 		}
 		System.out.println("Training is Finished.");
@@ -172,25 +169,69 @@ public class Main {
 
 		for(int i=0; i<h; i++) {
 			for(int j=0; j<h; j++) {
-				test_X[i*h+j][0] = (double)i/h;
-				test_X[i*h+j][1] = (double)j/h;
+				test_X[i*h+j][1] = (double)i/h;
+				test_X[i*h+j][0] = (double)j/h;
 			}
 		}
-
-		//テストデータを入力層へ入力
 		for(int i=0; i<test_X.length; i++) {
+			//テストデータを入力層へ入力
 			for(int j=0; j<input.length; j++) {
 				input[j].input(test_X[i][j]);
 			}
-		}
-		for(int i=0; i<test_X.length; i++) {
 			for(int j=0; j<outputNumber; j++) {
 				test_Y[i][j] = forward(input, inter, out)[j].output();
 
 			}
 		}
 
+		//クラスタリング
+		double com = 0.0;
+		int classofX[] = new int[h*h];
+		int border = 0;
+
+		for(int i=0; i<h; i++) {
+			for(int j=0; j<h; j++) {
+				com = test_Y[i*h+j][0];
+				for(int k=0; k<outputNumber; k++) {
+					if(com < test_Y[i*h+j][k]) {
+						com = test_Y[i*h+j][k];
+						classofX[i*h+j] = k;
+						border++;
+					}
+				}
+			}
+		}
+
+		double chengeX[][] = new double[border][inputNumber];
+		int comClass;
+		int count = 0;
+		for(int i=0; i<h; i++) {
+			comClass = classofX[i*h];
+			for(int j=1; j<h; j++) {
+				if(comClass != classofX[i*h+j]){
+					comClass = classofX[i*h+j];
+					for(int k=0; k<inputNumber; k++) {
+						chengeX[count][k] = test_X[i*h+j][k];
+					}
+					count++;
+				}
+			}
+		}
+
 		//ファイル書き出し
-		writeFile(writePath, test_X, test_Y);
+		writeFile(writePath, test_X, test_Y, classofX);
+
+		//境界線用データ
+		String borderPath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\border.dat";	//Windows(研究室環境)
+		PrintWriter outPrint = new PrintWriter(new BufferedWriter(new FileWriter(borderPath)));
+		for(int i=0; i<chengeX.length; i++) {
+			for(int j=0; j<chengeX[i].length; j++) {
+				outPrint.write(String.valueOf(chengeX[i][j]));
+				outPrint.write("\t");
+			}
+			outPrint.println("");
+		}
+		outPrint.close();
+
 	}
 }
