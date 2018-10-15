@@ -114,10 +114,12 @@ public class Main {
 		InterNeuron inter[] = new InterNeuron[interNumber];
 		for(int i=0; i<inter.length; i++){
 			inter[i] = new InterNeuron(inputNumber, Math.random(), Math.random(), preEta, preAlpha);	//コンストラクタには前層の個数を指定 = weightの個数を決定する
+//			inter[i] = new InterNeuron(inputNumber, preWeight, preThreshoud, preEta, preAlpha);	//コンストラクタには前層の個数を指定 = weightの個数を決定する
 		}
 		OutputNeuron out[] = new OutputNeuron[outputNumber];
 		for(int i=0; i<out.length; i++) {
 			out[i] = new OutputNeuron(interNumber, Math.random(), Math.random(), preEta, preAlpha);
+//			out[i] = new OutputNeuron(interNumber, preWeight, preThreshoud, preEta, preAlpha);
 		}
 
 		//学習フェーズ
