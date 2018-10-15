@@ -39,7 +39,7 @@ public class Main {
 				out.write(String.valueOf(y[i][j]));
 				out.write("\t");
 			}
-			out.write("class:" + String.valueOf(classofX[i]+1));
+			out.write(String.valueOf("class: " + classofX[i]+1));
 			out.println("");
 		}
 		out.close();
@@ -68,11 +68,14 @@ public class Main {
 		double preAlpha = 0.8;	//慢性項係数初期値
 
 		//ファイル読み込みPath
-//		String readPath = "/Users/Uone/IDrive/OPU/研究フォルダ/1_プログラミング課題/eclipse_workspace/eclipse_ex1/src/eclipse_ex1/inputData.dat";	//Mac(ノートPC)環境
-		String readPath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\kadai2.dat";	//Windows(研究室環境)
+		String readPath = "/Users/Uone/IDrive/OPU/研究フォルダ/Junior_ex2/eclipse_workspace/Junior_ex2/src/kadai2.dat";	//Mac(ノートPC)環境
+//		String readPath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\kadai2.dat";	//Windows(研究室環境)
 		//ファイル書き込みPath
-//		String writePath = "/Users/Uone/IDrive/OPU/研究フォルダ/1_プログラミング課題/eclipse_workspace/eclipse_ex1/src/eclipse_ex1/outputData.dat";	//Mac(ノートPC)環境
-		String writePath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\outputData.dat";	//Windows(研究室環境)
+		String writePath = "/Users/Uone/IDrive/OPU/研究フォルダ/Junior_ex2/eclipse_workspace/Junior_ex2/src/outputData.dat";	//Mac(ノートPC)環境
+//		String writePath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\outputData.dat";	//Windows(研究室環境)
+		//境界点書き込みPath
+		String borderPath = "/Users/Uone/IDrive/OPU/研究フォルダ/Junior_ex2/eclipse_workspace/Junior_ex2/src/border.dat";	//Mac(ノートPC)環境
+//		String borderPath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\border.dat";	//Windows(研究室環境)
 
 		//ファイル読み込み
 		double[][] inputFile;	//datファイル ２次元配列化
@@ -206,7 +209,6 @@ public class Main {
 		}
 
 		//境界点 書き出し
-		String borderPath = "C:\\Users\\Yuichi Omozaki\\IDrive\\Junior_ex2\\eclipse_workspace\\Junior_ex2\\src\\border.dat";	//Windows(研究室環境)
 		PrintWriter outPrint = new PrintWriter(new BufferedWriter(new FileWriter(borderPath)));
 
 		int comClass = -1;
